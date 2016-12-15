@@ -2,14 +2,9 @@
 
 # -*- coding: utf-8 -*-
 
+import email
 from email.parser import Parser
 import poplib
-
-
-def my_unicode(s, encoding):
-    if encoding:
-        return unicode(s, encoding)
-    return unicode(s)
 
 
 class Message:
@@ -65,7 +60,8 @@ class Message:
 
 def toMessage(msg):
     message = Message()
-    message.subject = msg.get('Subject')
+    message.subject = email.Header.decode_header(msg.get('Subject'))
+    message.subject = message.subject[0][0].decode(message.subject[0][1])
     message.date = msg.get('Date')
     message.from_ = msg.get('from')
     message.to = msg.get('to')
@@ -143,10 +139,10 @@ class EmailReceiver(object):
         self._server.quit()
 
 if __name__ == '__main__':
-    # pop3_server = 'pop.163.com'
-    # email_addr = 'article_receiver@163.com'
-    pop3_server = 'pop.qq.com'
-    email_addr = input("qq email: ")
+    pop3_server = 'pop.163.com'
+    email_addr = 'article_receiver@163.com'
+    # pop3_server = 'pop.qq.com'
+    # email_addr = input("qq email: ")
     passwd = input("qq password: ")
     receiver = EmailReceiver(pop3_server)
     receiver.login(email_addr, passwd)
