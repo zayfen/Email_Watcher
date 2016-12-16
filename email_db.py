@@ -9,22 +9,25 @@ class EmailDb(object):
         self._db_name = db_name
         self._db_connecter = None
         self.__CREATE_DB_IF_NOT_EXIST = ''
-        self.__CREATE_TABLE_IF_NOT_EXIST = ('create table "email"  ('
-                                            'id int(11) not null,'
-                                            'date varchar(20),'
-                                            'from varchar(50),'
-                                            'to varchar(50),'
-                                            'subject varchar(200),'
-                                            'content text'
-                                            'primary key (\'id\')) if not exists;')
+        self.__CREATE_TABLE_IF_NOT_EXIST = ('create table if not exists email ('
+                                            'id INTEGER PRIMARY KEY,'
+                                            'date TEXT,'
+                                            'from_ TEXT,'
+                                            'to_ TEXT,'
+                                            'subject TEXT,'
+                                            'content TEXT);')
+        self.__cursor = None
         self._connected = False
 
     def connect(self):
         self._db_connecter = sqlite3.connect(self._db_path + "/" + self._db_name)
+        if self._db_connecter:
+            self._connected = True
         self.create_email_table_if_not_exist()
-        self._connected = True
+            
 
     def create_email_table_if_not_exist(self):
+        print(self.__CREATE_TABLE_IF_NOT_EXIST)
         assert(self._connected is True)
         self._db_connecter.execute(self.__CREATE_TABLE_IF_NOT_EXIST)
         if self._db_connecter:
@@ -36,7 +39,8 @@ class EmailDb(object):
 
     def save_email(self, id, date, from_, to, subject, content):
         assert(self._connected is True)
-        sql_insert = ('insert into email values({},{},{},{},{},{});'.format(id, date, from_, to, subject, content))
+        sql_insert = ('insert into email values(\"{}\",\"{}\",\"{}\",\"{}\",\"{}\",\"{}\");'.format(id, date, from_, to, subject, content))
+        print(sql_insert)
         self._cursor = self._db_connecter.cursor()
         self._cursor.execute(sql_insert)
         self._db_connecter.commit()
@@ -55,3 +59,13 @@ class EmailDb(object):
     def close(self):
         self._cursor.close()
         self._db_connecter.close()
+
+
+def main():
+    email_db = EmailDb('./', 'test.db')
+    email_db.connect()
+    email_db.save_email(1, "2016-10-10", "zhangyunfeng0101@gmail.com", "845835744@qq.com", "just a test", "this is content")
+
+
+if __name__ == '__main__':
+    main()
