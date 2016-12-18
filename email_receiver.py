@@ -16,46 +16,47 @@ class Message:
         self.file_name = None
         self.contents_plain = []
         self.contents_html = []
+        self.id = None
 
-    @property
-    def subject(self):
-        return self.subject
+    # @property
+    # def subject(self):
+    #     return self.subject
 
-    @subject.setter
-    def subject(self, subject):
-        self.subject = subject
+    # @subject.setter
+    # def subject(self, subject):
+    #     self.subject = subject
 
-    @property
-    def date(self):
-        return self.date
+    # @property
+    # def date(self):
+    #     return self.date
 
-    @date.setter
-    def date(self, date):
-        self.date = date
+    # @date.setter
+    # def date(self, date):
+    #     self.date = date
 
-    @property
-    def from_(self):
-        return self.from_
+    # @property
+    # def from_(self):
+    #     return self.from_
 
-    @from_.setter
-    def from_(self, from_):
-        self.from_ = from_
+    # @from_.setter
+    # def from_(self, from_):
+    #     self.from_ = from_
 
-    @property
-    def to(self):
-        return self.to
+    # @property
+    # def to(self):
+    #     return self.to
 
-    @to.setter
-    def to(self, to):
-        self.to = to
+    # @to.setter
+    # def to(self, to):
+    #     self.to = to
 
-    @property
-    def fileName(self):
-        return self.file_name
+    # @property
+    # def fileName(self):
+    #     return self.file_name
 
-    @fileName.setter
-    def fileName(self, file_name):
-        self.file_name = file_name
+    # @fileName.setter
+    # def fileName(self, file_name):
+    #     self.file_name = file_name
 
 
 def toMessage(msg):
@@ -126,14 +127,24 @@ class EmailReceiver(object):
     def fetch_emails_list(self):
         self.resp, self.mails, self.octets = self._server.list()
 
+    def get_email_by_id(self, id):
+        _, lines, _ = self._server.retr(id)
+        msg_content = b'\r\n'.join(lines)
+        emailMsg = Parser().parsestr(msg_content.decode('utf-8'))
+        message = toMessage(emailMsg)
+        message.id = id
+        return message
+
+    def get_email_count(self):
+        count = 0
+        if self.mails:
+            count = len(self.mails)
+        return count
+
     def get_latest_email(self):
         self.fetch_emails_list()
         length = len(self.mails)
-        _, lines, _ = self._server.retr(length)
-        msg_content = b'\r\n'.join(lines)
-        emailMsg = Parser().parsestr(msg_content)
-        message = toMessage(emailMsg)
-        return message
+        return self.get_email_by_id(length)
 
     def logout(self):
         self._server.quit()
@@ -141,9 +152,10 @@ class EmailReceiver(object):
 if __name__ == '__main__':
     pop3_server = 'pop.163.com'
     email_addr = 'article_receiver@163.com'
+    passwd = 'zyf515815'
     # pop3_server = 'pop.qq.com'
     # email_addr = input("qq email: ")
-    passwd = input("qq password: ")
+    # passwd = input("qq password: ")
     receiver = EmailReceiver(pop3_server)
     receiver.login(email_addr, passwd)
     receiver.fetch_emails_list()

@@ -1,0 +1,12 @@
+{
+	"emails":
+	[
+		{"pop3": "pop.163.com", "port": "", "enable_ssl": true, "account":"article_receiver@163.com", "passwd": "zyf515815"}
+	],
+	"white_list":
+	[
+		"845835744@qq.com", "zhangyunfeng0101@gmail.com"
+	],
+	"db": {	"path": "./", "name": "email.db" },
+	"publish_path": "./"
+}
