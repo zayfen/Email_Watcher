@@ -6,7 +6,10 @@ from email_db import EmailDb
 from email_db import EmailItem
 from email_receiver import EmailReceiver
 from email_receiver import Message
-
+import time
+import sys
+reload(sys)
+sys.setdefaultencoding('utf-8')
 
 class MetaRun(object):
 	"""docstring for MetaRun"""
@@ -23,7 +26,7 @@ class MetaRun(object):
 
 	def publish_article(self, title, content):
 		file_path_name = self.config.publish_path + title + ".md"
-		with open (file_path_name) as file_:
+		with open (file_path_name, 'w') as file_:
 			file_.write(content)
 
 
@@ -36,7 +39,10 @@ class MetaRun(object):
 			self.receiver.fetch_emails_list()
 			latest_email = self.receiver.get_latest_email()
 			from_ = latest_email.from_
-
+			a = self.config.in_white_list(from_)
+			print(from_)
+			b = self.email_db.is_email_existed(latest_email.id)
+			print(a , b)
 			if self.config.in_white_list(from_) and not self.email_db.is_email_existed(latest_email.id):
 				email_item = EmailItem()
 				email_item.id = latest_email.id
@@ -44,9 +50,9 @@ class MetaRun(object):
 				email_item.to = latest_email.to
 				email_item.date = latest_email.date
 				email_item.subject = latest_email.subject
-				email_item.content = latest_email.content
+				email_item.content = latest_email.contents_plain
 				self.save_email(email_item)
-				publish_article(email_item.subject, email_item.content)
+				self.publish_article(email_item.subject, email_item.content)
 			else:
 				print("no new article")
 			time.sleep(1 * 60)

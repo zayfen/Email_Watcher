@@ -62,7 +62,10 @@ class Message:
 def toMessage(msg):
     message = Message()
     message.subject = email.Header.decode_header(msg.get('Subject'))
-    message.subject = message.subject[0][0].decode(message.subject[0][1])
+    charset = message.subject[0][1]
+    if not charset:
+        charset = "utf-8"
+    message.subject = message.subject[0][0].decode(charset)
     message.date = msg.get('Date')
     message.from_ = msg.get('from')
     message.to = msg.get('to')
@@ -164,5 +167,4 @@ if __name__ == '__main__':
     print('date: ' + latest_email.date)
     print('from: ' + latest_email.from_)
     print('to: ' + latest_email.to)
-    print( latest_email.contents_plain)
-
+    print('content:' +  latest_email.contents_plain)

@@ -2,6 +2,9 @@
 # -*- coding: utf-8 -*-
 
 import sqlite3
+import sys
+reload(sys)
+sys.setdefaultencoding('utf-8')
 
 ## id, date, from_, to, subject, content
 class EmailItem(object):
@@ -67,6 +70,7 @@ class EmailDb(object):
 
     def save_email(self, id, date, from_, to, subject, content):
         assert(self._connected is True)
+        sql_insert = ""
         try :
             sql_insert = ('insert into email values(\"{}\",\"{}\",\"{}\",\"{}\",\"{}\",\"{}\");'.format(id, date, from_, to, subject, content))
             self._cursor.execute(sql_insert)
@@ -77,7 +81,6 @@ class EmailDb(object):
             raise e
         except Exception as e:
             print ("save email error when execute sql: %s" % sql_insert)
-            print ('Error detail: ' + e.what())
             raise e
         return False
 

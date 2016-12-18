@@ -5,7 +5,7 @@
 	],
 	"white_list":
 	[
-		"845835744@qq.com", "zhangyunfeng0101@gmail.com"
+		  "845835744@qq.com", "zhangyunfeng0101@gmail.com", "13297915525@qq.com"
 	],
 	"db": {	"path": "./", "name": "email.db" },
 	"publish_path": "./"

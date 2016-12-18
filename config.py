@@ -35,8 +35,10 @@ class Config(object):
 		self.publish_path = self.data['publish_path']
 
 	def in_white_list(self, email):
-		if email in self.white_list:
-			return True
+		for email_ in self.white_list:
+			print(email_,  email.decode('utf-8'))
+			if email_ in email:
+				return True
 		return False
 
 	def get_login_emails(self):
