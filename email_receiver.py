@@ -2,10 +2,11 @@
 
 # -*- coding: utf-8 -*-
 
+import base64
 import email
 from email.parser import Parser
 import poplib
-
+import requests
 
 class Message:
     def __init__(self):
@@ -18,57 +19,28 @@ class Message:
         self.contents_html = []
         self.id = None
 
-    # @property
-    # def subject(self):
-    #     return self.subject
-
-    # @subject.setter
-    # def subject(self, subject):
-    #     self.subject = subject
-
-    # @property
-    # def date(self):
-    #     return self.date
-
-    # @date.setter
-    # def date(self, date):
-    #     self.date = date
-
-    # @property
-    # def from_(self):
-    #     return self.from_
-
-    # @from_.setter
-    # def from_(self, from_):
-    #     self.from_ = from_
-
-    # @property
-    # def to(self):
-    #     return self.to
-
-    # @to.setter
-    # def to(self, to):
-    #     self.to = to
-
-    # @property
-    # def fileName(self):
-    #     return self.file_name
-
-    # @fileName.setter
-    # def fileName(self, file_name):
-    #     self.file_name = file_name
-
+    @staticmethod
+    def parseHeaderItem(raw_data):
+        '''解析原始头部数据
+        '''
+        str_charset_list = email.header.decode_header(raw_data)
+        contents = []
+        for string, charset in str_charset_list:
+            if not charset:
+                charset = "utf-8"
+            if string:
+                if isinstance(string, bytes):
+                    contents.append(string.decode(charset))
+                else:
+                    contents.append(string)
+        return "".join(contents)
 
 def toMessage(msg):
     message = Message()
-    message.subject = email.Header.decode_header(msg.get('Subject'))
-    charset = message.subject[0][1]
-    if not charset:
-        charset = "utf-8"
-    message.subject = message.subject[0][0].decode(charset)
-    message.date = msg.get('Date')
-    message.from_ = msg.get('from')
-    message.to = msg.get('to')
+    message.subject = Message.parseHeaderItem(msg.get('Subject'))
+    message.date = Message.parseHeaderItem(msg.get('Date'))
+    message.from_ = Message.parseHeaderItem(msg.get('from'))
+    message.to = Message.parseHeaderItem(msg.get('to'))
 
     for part in msg.walk():
         content_type = part.get_content_type()
@@ -117,10 +89,11 @@ class EmailReceiver(object):
     def login(self, email_addr, passwd, use_ssl=True):
         self._email_addr = email_addr
         self._passwd = passwd
-        if (use_ssl):
+        if use_ssl:
             self._server = poplib.POP3_SSL(self._pop3_server, self._port)
         else:
             self._server = poplib.POP3(self._pop3_server, self._port)
+        self._server.utf8()
         self._server.user(self._email_addr)
         self._server.pass_(self._passwd)
 
@@ -155,7 +128,7 @@ class EmailReceiver(object):
 if __name__ == '__main__':
     pop3_server = 'pop.163.com'
     email_addr = 'article_receiver@163.com'
-    passwd = 'zyf515815'
+    passwd = 'xxxxx'
     # pop3_server = 'pop.qq.com'
     # email_addr = input("qq email: ")
     # passwd = input("qq password: ")
@@ -163,8 +136,10 @@ if __name__ == '__main__':
     receiver.login(email_addr, passwd)
     receiver.fetch_emails_list()
     latest_email = receiver.get_latest_email()
+
     print('subject: ' + latest_email.subject)
     print('date: ' + latest_email.date)
     print('from: ' + latest_email.from_)
     print('to: ' + latest_email.to)
-    print('content:' +  latest_email.contents_plain)
+    print('content_plain:' +  latest_email.contents_plain)
+    print('content_html: ' + latest_email.contents_html)

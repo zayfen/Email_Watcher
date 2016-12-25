@@ -5,21 +5,10 @@
 import json
 
 
-# class EmailLoginAttrs(object):
-# 	"""docstring for EmailLoginItem"""
-# 	def __init__(self, pop3_server, account, passwd, enable_ssl=True, port=995):
-# 		super(EmailLoginItem, self).__init__()
-# 		self.pop3_server = pop3_server
-# 		self.account = account
-# 		self.passwd = passwd
-# 		self.prot = port
-# 		self.enable_ssl = enable_ssl
-
-
 class Config(object):
 	"""parse config.json
 	"""
-	def __init__(self, config_path="./config.json"):
+	def __init__(self, config_path="./config/config.json"):
 		super(Config, self).__init__()
 		self.config_path = config_path
 		with open(self.config_path) as self.json_data:
@@ -36,7 +25,6 @@ class Config(object):
 
 	def in_white_list(self, email):
 		for email_ in self.white_list:
-			print(email_,  email.decode('utf-8'))
 			if email_ in email:
 				return True
 		return False

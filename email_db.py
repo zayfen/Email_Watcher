@@ -1,10 +1,11 @@
 #!/bin/env python
 # -*- coding: utf-8 -*-
 
+import imp
 import sqlite3
 import sys
-reload(sys)
-sys.setdefaultencoding('utf-8')
+from utils import Utils
+
 
 ## id, date, from_, to, subject, content
 class EmailItem(object):
@@ -31,7 +32,7 @@ class EmailDb(object):
         self._db_name = db_name
         self._db_connecter = None
         self.__CREATE_DB_IF_NOT_EXIST = ''
-        self.__CREATE_TABLE_IF_NOT_EXIST = ('create table if not exists email ('
+        self.__CREATE_TABLE_IF_NOT_EXIST = ('create table if not exists t_email ('
                                             'id INTEGER PRIMARY KEY,'
                                             'date TEXT,'
                                             'from_ TEXT,'
@@ -65,14 +66,18 @@ class EmailDb(object):
             self._db_connecter.commit()
 
     def save_email_item(self, email_item):
-        return self.save_email(email_item.id, email_item.date, email_item.from_, email_item.to, email_item.subject, email_item.content)
-
+        b64_date = Utils.base64_encode(email_item.date)
+        b64_from = Utils.base64_encode(email_item.from_)
+        b64_to = Utils.base64_encode(email_item.to)
+        b64_subject = Utils.base64_encode(email_item.subject)
+        b64_content = Utils.base64_encode(email_item.content)
+        return self.save_email(email_item.id, b64_date, b64_from, b64_to, b64_subject, b64_content)
 
     def save_email(self, id, date, from_, to, subject, content):
         assert(self._connected is True)
         sql_insert = ""
         try :
-            sql_insert = ('insert into email values(\"{}\",\"{}\",\"{}\",\"{}\",\"{}\",\"{}\");'.format(id, date, from_, to, subject, content))
+            sql_insert = ('insert into t_email values(\"{}\",\"{}\",\"{}\",\"{}\",\"{}\",\"{}\");'.format(id, date, from_, to, subject, content))
             self._cursor.execute(sql_insert)
             self._db_connecter.commit()
             return True
@@ -87,39 +92,35 @@ class EmailDb(object):
     def delete_email(self, id):
         '''delete a email by email id
         '''
-        sql_delete = 'delete from email where id={}'.format(id)
+        sql_delete = 'delete from t_email where id={}'.format(id)
         self._cursor.execute(sql_delete)
         self._db_connecter.commit()
 
     def is_email_existed(self, id):
-        sql_fetch_id = 'select id from email;'
-        self._cursor.execute(sql_fetch_id)
-        ids = self._cursor.fetchall()
-        for id_ in ids:
-            if id == id_:
-                return True;
+        sql_fetch_id = 'select * from t_email where id=%d;' % id
+        rows = self._cursor.execute(sql_fetch_id)
+        for row in rows:
+            return True
         return False
 
     def fetch_email_item(self, id):
         ''' fetch email by id
-
             Attributes: 
             id -- email id
-
             Return: EmailItem instance or None when not get a email
         '''
-        sql_fetch_email = 'select * from email where id=%d' % id
+        sql_fetch_email = 'select * from t_email where id=%d' % id
         print(sql_fetch_email)
         row = self._cursor.execute(sql_fetch_email)
-        assert row.rowcount == 1, 'one id should only map to one email record.'
+       
         for email_tuple in row:
             email_item = EmailItem()
             email_item.id = email_tuple[0]
-            email_item.date = email_tuple[1]
-            email_item.from_ = email_tuple[2]
-            email_item.to = email_tuple[3]
-            email_item.subject = email_tuple[4]
-            email_item.content = email_tuple[5]
+            email_item.date = Utils.base64_decode(email_tuple[1])
+            email_item.from_ = Utils.base64_decode(email_tuple[2])
+            email_item.to = Utils.base64_decode(email_tuple[3])
+            email_item.subject = Utils.base64_decode(email_tuple[4])
+            email_item.content = Utils.base64_decode(email_tuple[5])
             return email_item
         return None
 
@@ -131,11 +132,11 @@ class EmailDb(object):
             self._db_connecter.close()
 
 
-def main():
-    email_db = EmailDb('./', 'test.db')
-    email_db.connect()
-    email_db.save_email(2, "2016-10-10", "zhangyunfeng0101@gmail.com", "845835744@qq.com", "just a test", "我爱我的祖国this is content")
-    print (email_db.fetch_email_item(2))
+# def main():
+#     email_db = EmailDb('./', 'email.db')
+#     email_db.connect()
+#     email_db.save_email(43, "2016-10-10", "zhangyunfeng0101@gmail.com", "845835744@qq.com", "just a test中文", "我爱我的祖国this is content")
+#     print (email_db.fetch_email_item(2))
 
-if __name__ == '__main__':
-    main()
+# if __name__ == '__main__':
+#     main()
