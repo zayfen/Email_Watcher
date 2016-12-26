@@ -5,10 +5,17 @@ import subprocess
 from subprocess import CompletedProcess
 import time
 
-gExceptonOccured = False
+import sys
+import io
+
+print("default encoding: " + sys.getdefaultencoding())
+sys.stdout = io.TextIOWrapper(sys.stdout.buffer,encoding='utf-8')
+
+gExceptionOccured = False
 
 def notifyException(exception_msg):
-	if gExceptonOccured:
+	global gExceptionOccured
+	if gExceptionOccured:
 		return 0
 	# TODO: 发通知，告知服务异常
 

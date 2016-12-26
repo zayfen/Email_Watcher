@@ -22,16 +22,15 @@ class MetaRun(object):
         self.email_db = EmailDb(self.config.db_path, self.config.db_name)
         self.email_db.connect()
         self.receiver = EmailReceiver(self.config.emails[0]['pop3'])
-        self.receiver.login(self.config.emails[0][
-                            'account'], self.config.emails[0]['passwd'])
+        self.receiver.login(self.config.emails[0]['account'], self.config.emails[0]['passwd'])
 
     def save_email(self, email_item):
         self.email_db.save_email_item(email_item)
 
     def publish_article(self, title, content):
         file_path_name = self.config.publish_path + title + ".md"
-        with open(file_path_name, mode='w', encoding='utf-8') as file_:
-            file_.write(content)
+        with open(file_path_name, mode='w') as file_:
+            file_.write(content.encode('utf-8'))
 
     def run(self):
         ''' step1 receive email per 1 minute
@@ -62,14 +61,16 @@ class MetaRun(object):
                     email_item.date = this_email.date
                     email_item.subject = this_email.subject
                     email_item.content = this_email.contents_plain
-                    self.save_email(email_item)
+                    print("subject: " + email_item.subject)
+                    print("content: " + email_item.content)
                     self.publish_article(email_item.subject, email_item.content)
+                    self.save_email(email_item)
                 else:
                     print("no new article ")
                     break
             
             self.receiver.logout()
-            time.sleep(2 * 60) # relogin after 5 minutes
+            time.sleep(2 * 60) # relogin after 2 minutes
             
 def main():
     meta = MetaRun()

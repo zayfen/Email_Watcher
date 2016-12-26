@@ -6,7 +6,6 @@ import base64
 import email
 from email.parser import Parser
 import poplib
-import requests
 
 class Message:
     def __init__(self):
@@ -21,9 +20,9 @@ class Message:
 
     @staticmethod
     def parseHeaderItem(raw_data):
-        '''解析原始头部数据
+        '''parse email header
         '''
-        str_charset_list = email.header.decode_header(raw_data)
+        str_charset_list = email.Header.decode_header(raw_data)
         contents = []
         for string, charset in str_charset_list:
             if not charset:
@@ -93,7 +92,8 @@ class EmailReceiver(object):
             self._server = poplib.POP3_SSL(self._pop3_server, self._port)
         else:
             self._server = poplib.POP3(self._pop3_server, self._port)
-        self._server.utf8()
+            self._server.utf8()
+        
         self._server.user(self._email_addr)
         self._server.pass_(self._passwd)
 
